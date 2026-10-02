@@ -1,0 +1,38 @@
+name: Daily AI Short
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 12 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install packages
+        run: pip install -r requirements.txt
+
+      - name: Generate video
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash-lite
+          VOICE: en-IN-PrabhatNeural
+        run: python app.py
+
+      - name: Save generated files
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-output
+          path: output/
+          retention-days: 7
